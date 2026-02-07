@@ -1,14 +1,9 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "Client/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "Client/dist"
-      }
-    }
-  ],
+  "buildCommand": "cd Client && npm install && npm run build",
+  "outputDirectory": "Client/dist",
+  "installCommand": "cd Client && npm install",
+  "framework": null,
   "routes": [
     {
       "src": "/assets/(.*)",
