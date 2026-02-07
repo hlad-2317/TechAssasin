@@ -13,6 +13,10 @@
 *.spec.ts
 *.spec.tsx
 
+# connection test files
+test-supabase-connection.mjs
+test-supabase-connection.ts
+
 # next.js
 /.next/
 /out/
