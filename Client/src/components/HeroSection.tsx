@@ -5,21 +5,21 @@ const HeroSection = () => {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16"
     >
       {/* Background */}
-      <div className="absolute inset-0">
+      <div className="absolute top-16 left-0 right-0 bottom-0">
         <img
           src={heroBg}
           alt="TechAssasin cyberpunk background"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-fill"
           loading="eager"
         />
         <div className="absolute inset-0 bg-hero/50" />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 text-center py-32">
+      <div className="relative z-10 container mx-auto px-4 text-center pt-24 pb-20 md:pt-32 md:pb-32">
         <div className="inline-block mb-6 px-4 py-1.5 rounded-full border border-primary/40 bg-primary/10">
           <span className="text-primary text-sm font-semibold tracking-wide uppercase">
             Hackathon Community
