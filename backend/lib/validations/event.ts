@@ -49,7 +49,55 @@ export const eventCreateSchema = z.object({
  * Allows updating any subset of event fields
  * Requirements: 4.1
  */
-export const eventUpdateSchema = eventCreateSchema.partial()
+export const eventUpdateSchema = z.object({
+  title: z
+    .string()
+    .min(1, 'Title is required')
+    .max(200, 'Title must not exceed 200 characters')
+    .optional(),
+  description: z
+    .string()
+    .min(1, 'Description is required')
+    .optional(),
+  start_date: z
+    .string()
+    .datetime('Start date must be a valid ISO 8601 datetime')
+    .optional(),
+  end_date: z
+    .string()
+    .datetime('End date must be a valid ISO 8601 datetime')
+    .optional(),
+  location: z
+    .string()
+    .min(1, 'Location is required')
+    .max(200, 'Location must not exceed 200 characters')
+    .optional(),
+  max_participants: z
+    .number()
+    .int('Max participants must be an integer')
+    .positive('Max participants must be a positive number')
+    .optional(),
+  registration_open: z
+    .boolean()
+    .optional(),
+  prizes: z
+    .record(z.any())
+    .optional(),
+  themes: z
+    .array(z.string())
+    .optional()
+}).refine(
+  (data) => {
+    if (data.start_date && data.end_date) {
+      return new Date(data.end_date) > new Date(data.start_date)
+    }
+    return true
+  },
+  {
+    message: 'End date must be after start date',
+    path: ['end_date']
+  }
+)
 
 /**
  * Event filter validation schema

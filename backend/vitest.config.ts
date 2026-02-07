@@ -1,5 +1,13 @@
 import { defineConfig } from 'vitest/config'
 import path from 'path'
+import { loadEnvFile } from 'node:process'
+
+// Load environment variables from .env.local
+try {
+  loadEnvFile(path.resolve(__dirname, '.env.local'))
+} catch (error) {
+  console.warn('Warning: Could not load .env.local file')
+}
 
 export default defineConfig({
   test: {
