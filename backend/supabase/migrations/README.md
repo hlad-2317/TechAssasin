@@ -42,6 +42,39 @@ The migrations are numbered sequentially and should be applied in order:
    - Creates trigger `on_auth_user_created` for automatic profile creation
    - Sets default values: is_admin = false, skills = empty array
 
+9. **20260207000009_create_rls_policies_profiles.sql**
+   - Creates RLS policies for profiles table
+
+10. **20260207000010_create_rls_policies_events.sql**
+    - Creates RLS policies for events table
+
+11. **20260207000011_create_rls_policies_registrations.sql**
+    - Creates RLS policies for registrations table
+
+12. **20260207000012_create_rls_policies_announcements.sql**
+    - Creates RLS policies for announcements table
+
+13. **20260207000013_create_rls_policies_resources.sql**
+    - Creates RLS policies for resources table
+
+14. **20260207000014_create_rls_policies_sponsors.sql**
+    - Creates RLS policies for sponsors table
+
+15. **20260207000015_create_rls_policies_leaderboard.sql**
+    - Creates RLS policies for leaderboard table
+
+16. **20260207000016_create_storage_buckets.sql**
+    - Creates 'avatars' storage bucket (public, 2MB limit)
+    - Creates 'event-images' storage bucket (public, 2MB limit)
+    - Creates 'sponsor-logos' storage bucket (public, 2MB limit)
+    - Configures allowed MIME types (jpeg, png, webp)
+
+17. **20260207000017_create_storage_policies.sql**
+    - Creates storage policies for avatars bucket (users can upload to their own folder)
+    - Creates storage policies for event-images bucket (admins only)
+    - Creates storage policies for sponsor-logos bucket (admins only)
+    - Enables public read access for all buckets
+
 ## Applying Migrations
 
 ### Using Supabase CLI
@@ -112,10 +145,26 @@ You can also apply these migrations manually by connecting to your PostgreSQL da
 
 After applying these migrations:
 
-1. Set up Row Level Security (RLS) policies (Task 3)
-2. Create Supabase Storage buckets (Task 4)
+1. ~~Set up Row Level Security (RLS) policies (Task 3)~~ ✓ Complete
+2. ~~Create Supabase Storage buckets (Task 4)~~ ✓ Complete
 3. Implement TypeScript types and interfaces (Task 5)
 4. Configure Supabase client (Task 6)
+
+## Storage Buckets
+
+The following storage buckets are configured:
+
+- **avatars**: User profile avatars (2MB limit, public read)
+  - Users can upload to `avatars/{user_id}/` folder
+  - Allowed types: JPEG, PNG, WebP
+
+- **event-images**: Event promotional images (2MB limit, public read)
+  - Admins only can upload/update/delete
+  - Allowed types: JPEG, PNG, WebP
+
+- **sponsor-logos**: Sponsor company logos (2MB limit, public read)
+  - Admins only can upload/update/delete
+  - Allowed types: JPEG, PNG, WebP
 
 ## Notes
 
