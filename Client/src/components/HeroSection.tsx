@@ -12,7 +12,7 @@ const HeroSection = () => {
         <img
           src={heroBg}
           alt="TechAssasin cyberpunk background"
-          className="w-full h-full object-fill"
+          className="w-full h-full object-cover object-center"
           loading="eager"
         />
         <div className="absolute inset-0 bg-hero/50" />
