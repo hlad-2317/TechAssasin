@@ -5,7 +5,7 @@ import { createRegistration } from '@/lib/services/registrations'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { sendRegistrationConfirmation } from '@/lib/email/resend'
-import { ZodError } from 'zod'
+import { handleApiError, NotFoundError, RateLimitError, ValidationError, ConflictError } from '@/lib/errors'
 
 /**
  * POST /api/registrations
@@ -21,13 +21,7 @@ export async function POST(request: NextRequest) {
     const rateLimit = checkRateLimit(user.id, 5, 60 * 60 * 1000)
     if (!rateLimit.allowed) {
       const resetDate = new Date(rateLimit.resetTime)
-      return NextResponse.json(
-        { 
-          error: 'Rate limit exceeded. Too many registration attempts.',
-          resetTime: resetDate.toISOString()
-        },
-        { status: 429 }
-      )
+      throw new RateLimitError(`Rate limit exceeded. Too many registration attempts. Reset time: ${resetDate.toISOString()}`)
     }
     
     // Parse and validate request body
@@ -42,21 +36,12 @@ export async function POST(request: NextRequest) {
       .eq('id', validatedData.event_id)
       .single()
     
-    if (eventError) {
-      if (eventError.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'Event not found' },
-          { status: 404 }
-        )
-      }
-      throw new Error(`Failed to get event: ${eventError.message}`)
+    if (eventError || !event) {
+      throw new NotFoundError('Event not found')
     }
     
     if (!event.registration_open) {
-      return NextResponse.json(
-        { error: 'Registration is closed for this event' },
-        { status: 400 }
-      )
+      throw new ValidationError('Registration is closed for this event')
     }
     
     // Create registration with capacity check
@@ -84,34 +69,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(registration, { status: 201 })
   } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.issues },
-        { status: 400 }
-      )
-    }
-    
-    if (error instanceof Error) {
-      if (error.message.includes('Unauthorized') || error.message.includes('Authentication required')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 401 }
-        )
-      }
-      
-      if (error.message.includes('already registered')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 409 }
-        )
-      }
-    }
-    
-    console.error('POST /api/registrations error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
 
@@ -120,7 +78,7 @@ export async function POST(request: NextRequest) {
  * Get current user's registrations across all events
  * Requirements: 5.8
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Verify authentication
     const user = await requireAuth()
@@ -154,19 +112,6 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(registrations || [])
   } catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes('Unauthorized') || error.message.includes('Authentication required')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 401 }
-        )
-      }
-    }
-    
-    console.error('GET /api/registrations error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }

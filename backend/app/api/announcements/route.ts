@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { requireAuth, requireAdmin, AuthenticationError, AuthorizationError } from '@/lib/middleware/auth'
+import { requireAuth, requireAdmin } from '@/lib/middleware/auth'
 import { announcementCreateSchema } from '@/lib/validations/announcement'
-import { ZodError } from 'zod'
+import { handleApiError, ValidationError } from '@/lib/errors'
 
 /**
  * GET /api/announcements
@@ -22,10 +22,7 @@ export async function GET(request: NextRequest) {
     
     // Validate pagination parameters
     if (page < 1 || limit < 1 || limit > 50) {
-      return NextResponse.json(
-        { error: 'Invalid pagination parameters. Page must be >= 1, limit must be between 1 and 50' },
-        { status: 400 }
-      )
+      throw new ValidationError('Invalid pagination parameters. Page must be >= 1, limit must be between 1 and 50')
     }
     
     const supabase = await createClient()
@@ -76,18 +73,7 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    if (error instanceof AuthenticationError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 401 }
-      )
-    }
-    
-    console.error('GET /api/announcements error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
 
@@ -135,31 +121,6 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(announcement, { status: 201 })
   } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.issues },
-        { status: 400 }
-      )
-    }
-    
-    if (error instanceof AuthenticationError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 401 }
-      )
-    }
-    
-    if (error instanceof AuthorizationError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 403 }
-      )
-    }
-    
-    console.error('POST /api/announcements error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getLeaderboard } from '@/lib/services/leaderboard'
 import { requireAuth } from '@/lib/middleware/auth'
+import { handleApiError } from '@/lib/errors'
 
 /**
  * GET /api/leaderboard/[eventId]
@@ -23,19 +24,6 @@ export async function GET(
     
     return NextResponse.json(entries)
   } catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes('Unauthorized') || error.message.includes('Authentication required')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 401 }
-        )
-      }
-    }
-    
-    console.error('GET /api/leaderboard/[eventId] error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }

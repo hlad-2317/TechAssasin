@@ -3,7 +3,7 @@ import { listEvents } from '@/lib/services/events'
 import { createClient } from '@/lib/supabase/server'
 import { requireAuth, requireAdmin } from '@/lib/middleware/auth'
 import { eventCreateSchema } from '@/lib/validations/event'
-import { ZodError } from 'zod'
+import { handleApiError, ValidationError } from '@/lib/errors'
 
 /**
  * GET /api/events
@@ -19,18 +19,12 @@ export async function GET(request: NextRequest) {
     
     // Validate pagination parameters
     if (page < 1 || limit < 1 || limit > 100) {
-      return NextResponse.json(
-        { error: 'Invalid pagination parameters' },
-        { status: 400 }
-      )
+      throw new ValidationError('Invalid pagination parameters')
     }
     
     // Validate status if provided
     if (status && !['live', 'upcoming', 'past'].includes(status)) {
-      return NextResponse.json(
-        { error: 'Invalid status filter. Must be live, upcoming, or past' },
-        { status: 400 }
-      )
+      throw new ValidationError('Invalid status filter. Must be live, upcoming, or past')
     }
     
     const { events, total } = await listEvents({
@@ -51,11 +45,7 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('GET /api/events error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
 
@@ -101,33 +91,6 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(event, { status: 201 })
   } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
-    if (error instanceof Error) {
-      if (error.message.includes('Unauthorized') || error.message.includes('Authentication required')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 401 }
-        )
-      }
-      
-      if (error.message.includes('Admin access required')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 403 }
-        )
-      }
-    }
-    
-    console.error('POST /api/events error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }

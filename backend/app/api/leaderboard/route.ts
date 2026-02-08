@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { upsertLeaderboardEntry } from '@/lib/services/leaderboard'
 import { requireAuth, requireAdmin } from '@/lib/middleware/auth'
 import { leaderboardUpdateSchema } from '@/lib/validations/leaderboard'
-import { ZodError } from 'zod'
+import { handleApiError } from '@/lib/errors'
 
 /**
  * POST /api/leaderboard
@@ -27,33 +27,6 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(entry, { status: 201 })
   } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.issues },
-        { status: 400 }
-      )
-    }
-    
-    if (error instanceof Error) {
-      if (error.message.includes('Unauthorized') || error.message.includes('Authentication required')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 401 }
-        )
-      }
-      
-      if (error.message.includes('Admin access required')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 403 }
-        )
-      }
-    }
-    
-    console.error('POST /api/leaderboard error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
