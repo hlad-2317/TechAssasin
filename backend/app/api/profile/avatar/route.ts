@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { requireAuth, AuthenticationError } from '@/lib/middleware/auth'
+import { requireAuth } from '@/lib/middleware/auth'
+import { handleApiError, ValidationError } from '@/lib/errors'
 import type { Profile } from '@/types/database'
 
 /**
@@ -21,28 +22,19 @@ export async function POST(request: Request) {
     const file = formData.get('file') as File
     
     if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 }
-      )
+      throw new ValidationError('No file provided')
     }
     
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
     if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        { error: 'File must be an image (jpg, png, or webp)' },
-        { status: 400 }
-      )
+      throw new ValidationError('File must be an image (jpg, png, or webp)')
     }
     
     // Validate file size (< 2MB)
     const maxSize = 2 * 1024 * 1024 // 2MB in bytes
     if (file.size > maxSize) {
-      return NextResponse.json(
-        { error: 'File size must be under 2MB' },
-        { status: 400 }
-      )
+      throw new ValidationError('File size must be under 2MB')
     }
     
     // Get Supabase client
@@ -65,11 +57,7 @@ export async function POST(request: Request) {
       })
     
     if (uploadError) {
-      console.error('Error uploading avatar:', uploadError)
-      return NextResponse.json(
-        { error: 'Failed to upload avatar' },
-        { status: 500 }
-      )
+      throw new Error(`Failed to upload avatar: ${uploadError.message}`)
     }
     
     // Get public URL for the uploaded file
@@ -86,11 +74,7 @@ export async function POST(request: Request) {
       .single()
     
     if (updateError) {
-      console.error('Error updating profile with avatar URL:', updateError)
-      return NextResponse.json(
-        { error: 'Failed to update profile with avatar URL' },
-        { status: 500 }
-      )
+      throw new Error(`Failed to update profile with avatar URL: ${updateError.message}`)
     }
     
     return NextResponse.json({
@@ -99,17 +83,6 @@ export async function POST(request: Request) {
       profile: updatedProfile as Profile
     })
   } catch (error) {
-    if (error instanceof AuthenticationError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: error.statusCode }
-      )
-    }
-    
-    console.error('Unexpected error in POST /api/profile/avatar:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }

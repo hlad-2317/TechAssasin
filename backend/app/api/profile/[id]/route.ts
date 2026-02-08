@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { handleApiError, NotFoundError } from '@/lib/errors'
 import type { Profile } from '@/types/database'
 
 /**
@@ -25,26 +26,8 @@ export async function GET(
       .eq('id', id)
       .single()
     
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'Profile not found' },
-          { status: 404 }
-        )
-      }
-      
-      console.error('Error fetching profile:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch profile' },
-        { status: 500 }
-      )
-    }
-    
-    if (!profile) {
-      return NextResponse.json(
-        { error: 'Profile not found' },
-        { status: 404 }
-      )
+    if (error || !profile) {
+      throw new NotFoundError('Profile not found')
     }
     
     // Get current user to determine if this is their own profile
@@ -68,10 +51,6 @@ export async function GET(
     
     return NextResponse.json(publicProfile)
   } catch (error) {
-    console.error('Unexpected error in GET /api/profile/[id]:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }

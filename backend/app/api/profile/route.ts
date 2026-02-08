@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { requireAuth, AuthenticationError } from '@/lib/middleware/auth'
+import { requireAuth } from '@/lib/middleware/auth'
 import { profileUpdateSchema } from '@/lib/validations/profile'
-import { ZodError } from 'zod'
+import { handleApiError, NotFoundError, ConflictError, AuthorizationError } from '@/lib/errors'
+import { deleteAvatar } from '@/lib/storage/cleanup'
 import type { Profile } from '@/types/database'
 
 /**
@@ -26,34 +27,16 @@ export async function GET() {
       .single()
     
     if (error) {
-      console.error('Error fetching profile:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch profile' },
-        { status: 500 }
-      )
+      throw new Error(`Failed to fetch profile: ${error.message}`)
     }
     
     if (!profile) {
-      return NextResponse.json(
-        { error: 'Profile not found' },
-        { status: 404 }
-      )
+      throw new NotFoundError('Profile not found')
     }
     
     return NextResponse.json(profile as Profile)
   } catch (error) {
-    if (error instanceof AuthenticationError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: error.statusCode }
-      )
-    }
-    
-    console.error('Unexpected error in GET /api/profile:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
 
@@ -78,10 +61,7 @@ export async function PATCH(request: Request) {
     
     // Prevent is_admin modification
     if ('is_admin' in body) {
-      return NextResponse.json(
-        { error: 'Cannot modify admin status' },
-        { status: 403 }
-      )
+      throw new AuthorizationError('Cannot modify admin status')
     }
     
     // Get Supabase client
@@ -97,10 +77,7 @@ export async function PATCH(request: Request) {
         .single()
       
       if (existingProfile) {
-        return NextResponse.json(
-          { error: 'Username already taken' },
-          { status: 409 }
-        )
+        throw new ConflictError('Username already taken')
       }
     }
     
@@ -113,33 +90,53 @@ export async function PATCH(request: Request) {
       .single()
     
     if (error) {
-      console.error('Error updating profile:', error)
-      return NextResponse.json(
-        { error: 'Failed to update profile' },
-        { status: 500 }
-      )
+      throw new Error(`Failed to update profile: ${error.message}`)
     }
     
     return NextResponse.json(updatedProfile as Profile)
   } catch (error) {
-    if (error instanceof AuthenticationError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: error.statusCode }
-      )
+    return handleApiError(error)
+  }
+}
+
+/**
+ * DELETE /api/profile
+ * Delete current user's profile
+ * Cleans up avatar from storage
+ * Requirements: 15.7
+ */
+export async function DELETE() {
+  try {
+    // Verify authentication
+    const user = await requireAuth()
+    
+    // Get Supabase client
+    const supabase = await createClient()
+    
+    // Delete profile from database
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', user.id)
+    
+    if (error) {
+      throw new Error(`Failed to delete profile: ${error.message}`)
     }
     
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
+    // Clean up avatar from storage
+    // Handle cleanup errors gracefully (log but don't fail deletion)
+    try {
+      await deleteAvatar(user.id)
+    } catch (cleanupError) {
+      console.error(`Failed to clean up avatar for user ${user.id}:`, cleanupError)
+      // Continue - profile deletion was successful
     }
     
-    console.error('Unexpected error in PATCH /api/profile:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { message: 'Profile deleted successfully' },
+      { status: 200 }
     )
+  } catch (error) {
+    return handleApiError(error)
   }
 }

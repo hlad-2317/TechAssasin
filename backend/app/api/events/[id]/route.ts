@@ -3,7 +3,8 @@ import { getEventById } from '@/lib/services/events'
 import { createClient } from '@/lib/supabase/server'
 import { requireAuth, requireAdmin } from '@/lib/middleware/auth'
 import { eventUpdateSchema } from '@/lib/validations/event'
-import { ZodError } from 'zod'
+import { handleApiError, NotFoundError } from '@/lib/errors'
+import { deleteEventImages } from '@/lib/storage/cleanup'
 
 /**
  * GET /api/events/[id]
@@ -20,19 +21,12 @@ export async function GET(
     const event = await getEventById(id)
     
     if (!event) {
-      return NextResponse.json(
-        { error: 'Event not found' },
-        { status: 404 }
-      )
+      throw new NotFoundError('Event not found')
     }
     
     return NextResponse.json(event)
   } catch (error) {
-    console.error('GET /api/events/[id] error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
 
@@ -61,10 +55,7 @@ export async function PATCH(
     // Check if event exists
     const existingEvent = await getEventById(id)
     if (!existingEvent) {
-      return NextResponse.json(
-        { error: 'Event not found' },
-        { status: 404 }
-      )
+      throw new NotFoundError('Event not found')
     }
     
     // Update event in database
@@ -82,41 +73,14 @@ export async function PATCH(
     
     return NextResponse.json(event)
   } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.issues },
-        { status: 400 }
-      )
-    }
-    
-    if (error instanceof Error) {
-      if (error.message.includes('Unauthorized') || error.message.includes('Authentication required')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 401 }
-        )
-      }
-      
-      if (error.message.includes('Admin access required')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 403 }
-        )
-      }
-    }
-    
-    console.error('PATCH /api/events/[id] error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
 
 /**
  * DELETE /api/events/[id]
  * Delete an event (admin only, cascade deletes registrations)
- * Requirements: 4.4, 4.5
+ * Requirements: 4.4, 4.5, 15.7
  */
 export async function DELETE(
   request: NextRequest,
@@ -134,10 +98,7 @@ export async function DELETE(
     // Check if event exists
     const existingEvent = await getEventById(id)
     if (!existingEvent) {
-      return NextResponse.json(
-        { error: 'Event not found' },
-        { status: 404 }
-      )
+      throw new NotFoundError('Event not found')
     }
     
     // Delete event (cascade will delete registrations)
@@ -151,31 +112,20 @@ export async function DELETE(
       throw new Error(`Failed to delete event: ${error.message}`)
     }
     
+    // Clean up event images from storage
+    // Handle cleanup errors gracefully (log but don't fail deletion)
+    try {
+      await deleteEventImages(id)
+    } catch (cleanupError) {
+      console.error(`Failed to clean up event images for event ${id}:`, cleanupError)
+      // Continue - event deletion was successful
+    }
+    
     return NextResponse.json(
       { message: 'Event deleted successfully' },
       { status: 200 }
     )
   } catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes('Unauthorized') || error.message.includes('Authentication required')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 401 }
-        )
-      }
-      
-      if (error.message.includes('Admin access required')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 403 }
-        )
-      }
-    }
-    
-    console.error('DELETE /api/events/[id] error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
