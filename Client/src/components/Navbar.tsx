@@ -1,5 +1,7 @@
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { authService } from "@/services";
 
 const navLinks = [
   { label: "Prizes", href: "#prizes" },
@@ -10,13 +12,14 @@ const navLinks = [
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const isAuthenticated = authService.isAuthenticated();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-hero/80 backdrop-blur-md border-b border-foreground/10">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        <a href="#" className="text-hero-foreground font-heading font-bold text-xl tracking-tight">
+        <Link to="/" className="text-hero-foreground font-heading font-bold text-xl tracking-tight">
           Tech<span className="text-primary">Assasin</span>
-        </a>
+        </Link>
 
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-8">
@@ -29,12 +32,29 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
-          <a
-            href="#hero"
-            className="bg-primary text-primary-foreground px-5 py-2 rounded-md text-sm font-semibold hover:bg-primary/90 transition-colors"
-          >
-            Register Now
-          </a>
+          {isAuthenticated ? (
+            <Link
+              to="/dashboard"
+              className="bg-primary text-primary-foreground px-5 py-2 rounded-md text-sm font-semibold hover:bg-primary/90 transition-colors"
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <div className="flex items-center gap-3">
+              <Link
+                to="/signin"
+                className="text-hero-muted hover:text-hero-foreground transition-colors text-sm font-medium"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/signup"
+                className="bg-primary text-primary-foreground px-5 py-2 rounded-md text-sm font-semibold hover:bg-primary/90 transition-colors"
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -60,12 +80,32 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
-          <a
-            href="#hero"
-            className="block mt-2 bg-primary text-primary-foreground px-5 py-2 rounded-md text-sm font-semibold text-center hover:bg-primary/90 transition-colors"
-          >
-            Register Now
-          </a>
+          {isAuthenticated ? (
+            <Link
+              to="/dashboard"
+              onClick={() => setMobileOpen(false)}
+              className="block mt-2 bg-primary text-primary-foreground px-5 py-2 rounded-md text-sm font-semibold text-center hover:bg-primary/90 transition-colors"
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <div className="space-y-2 mt-2">
+              <Link
+                to="/signin"
+                onClick={() => setMobileOpen(false)}
+                className="block bg-secondary text-secondary-foreground px-5 py-2 rounded-md text-sm font-semibold text-center hover:bg-secondary/90 transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/signup"
+                onClick={() => setMobileOpen(false)}
+                className="block bg-primary text-primary-foreground px-5 py-2 rounded-md text-sm font-semibold text-center hover:bg-primary/90 transition-colors"
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </nav>
