@@ -131,7 +131,7 @@ export default function Dashboard() {
               <CardDescription>Browse and register for hackathons</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full">View Events</Button>
+              <Button className="w-full" onClick={() => navigate('/events')}>View Events</Button>
             </CardContent>
           </Card>
 

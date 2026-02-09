@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { authService } from "@/services";
 
 const navLinks = [
+  { label: "Events", href: "/events", isRoute: true },
   { label: "Prizes", href: "#prizes" },
   { label: "Tracks", href: "#tracks" },
   { label: "Why Us", href: "#why" },
@@ -24,13 +25,23 @@ const Navbar = () => {
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="text-hero-muted hover:text-hero-foreground transition-colors text-sm font-medium"
-            >
-              {link.label}
-            </a>
+            link.isRoute ? (
+              <Link
+                key={link.label}
+                to={link.href}
+                className="text-hero-muted hover:text-hero-foreground transition-colors text-sm font-medium"
+              >
+                {link.label}
+              </Link>
+            ) : (
+              <a
+                key={link.label}
+                href={link.href}
+                className="text-hero-muted hover:text-hero-foreground transition-colors text-sm font-medium"
+              >
+                {link.label}
+              </a>
+            )
           ))}
           {isAuthenticated ? (
             <Link
@@ -71,14 +82,25 @@ const Navbar = () => {
       {mobileOpen && (
         <div className="md:hidden bg-hero border-t border-foreground/10 px-4 pb-4">
           {navLinks.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              onClick={() => setMobileOpen(false)}
-              className="block py-3 text-hero-muted hover:text-hero-foreground transition-colors text-sm font-medium"
-            >
-              {link.label}
-            </a>
+            link.isRoute ? (
+              <Link
+                key={link.label}
+                to={link.href}
+                onClick={() => setMobileOpen(false)}
+                className="block py-3 text-hero-muted hover:text-hero-foreground transition-colors text-sm font-medium"
+              >
+                {link.label}
+              </Link>
+            ) : (
+              <a
+                key={link.label}
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                className="block py-3 text-hero-muted hover:text-hero-foreground transition-colors text-sm font-medium"
+              >
+                {link.label}
+              </a>
+            )
           ))}
           {isAuthenticated ? (
             <Link
