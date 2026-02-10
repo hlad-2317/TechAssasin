@@ -1,5 +1,6 @@
 import heroBg from "@/assets/hero-bg.png";
 import { CalendarDays, MapPin, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
@@ -52,12 +53,12 @@ const HeroSection = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href="#prizes"
+          <Link
+            to="/signup"
             className="bg-primary text-primary-foreground px-8 py-3.5 rounded-md font-semibold text-base hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25"
           >
             Register Now
-          </a>
+          </Link>
           <a
             href="#tracks"
             className="border border-hero-muted/30 text-hero-foreground px-8 py-3.5 rounded-md font-semibold text-base hover:bg-hero-foreground/5 transition-colors"
