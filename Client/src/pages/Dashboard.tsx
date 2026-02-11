@@ -73,10 +73,17 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-hero-bg via-hero-bg to-hero-bg">
       <div className="container mx-auto p-4 md:p-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <div className="flex items-center space-x-4">
+            <img 
+              src="/favicon.ico" 
+              alt="TechAssassin" 
+              className="w-8 h-8"
+            />
+            <h1 className="text-3xl font-bold text-hero-foreground">Dashboard</h1>
+          </div>
           <Button variant="outline" onClick={handleSignOut}>
             <LogOut className="mr-2 h-4 w-4" />
             Sign Out
@@ -84,34 +91,34 @@ export default function Dashboard() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
+          <Card className="bg-card/80 backdrop-blur-lg border-border shadow-2xl">
             <CardHeader>
-              <CardTitle className="flex items-center">
+              <CardTitle className="flex items-center text-card-foreground">
                 <User className="mr-2 h-5 w-5" />
                 Profile
               </CardTitle>
-              <CardDescription>Your account information</CardDescription>
+              <CardDescription className="text-muted-foreground">Your account information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               {profile ? (
                 <>
                   <div>
                     <p className="text-sm text-muted-foreground">Username</p>
-                    <p className="font-medium">{profile.username || 'Not set'}</p>
+                    <p className="font-medium text-card-foreground">{profile.username || 'Not set'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Full Name</p>
-                    <p className="font-medium">{profile.full_name || 'Not set'}</p>
+                    <p className="font-medium text-card-foreground">{profile.full_name || 'Not set'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Skills</p>
-                    <p className="font-medium">
+                    <p className="font-medium text-card-foreground">
                       {profile.skills.length > 0 ? profile.skills.join(', ') : 'No skills added'}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Account Type</p>
-                    <p className="font-medium">{profile.is_admin ? 'Admin' : 'User'}</p>
+                    <p className="font-medium text-card-foreground">{profile.is_admin ? 'Admin' : 'User'}</p>
                   </div>
                   <div className="pt-4">
                     <Button variant="outline" className="w-full">
@@ -125,20 +132,22 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-card/80 backdrop-blur-lg border-border shadow-2xl">
             <CardHeader>
-              <CardTitle>Events</CardTitle>
-              <CardDescription>Browse and register for hackathons</CardDescription>
+              <CardTitle className="text-card-foreground">Events</CardTitle>
+              <CardDescription className="text-muted-foreground">Browse and register for hackathons</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full">View Events</Button>
+              <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => navigate('/events')}>
+                View Events
+              </Button>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-card/80 backdrop-blur-lg border-border shadow-2xl">
             <CardHeader>
-              <CardTitle>My Registrations</CardTitle>
-              <CardDescription>Your event registrations</CardDescription>
+              <CardTitle className="text-card-foreground">My Registrations</CardTitle>
+              <CardDescription className="text-muted-foreground">Your event registrations</CardDescription>
             </CardHeader>
             <CardContent>
               <Button className="w-full" variant="outline">
@@ -149,10 +158,10 @@ export default function Dashboard() {
         </div>
 
         <div className="mt-8">
-          <Card>
+          <Card className="bg-card/80 backdrop-blur-lg border-border shadow-2xl">
             <CardHeader>
-              <CardTitle>Welcome to TechAssassin! 🎉</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-card-foreground">Welcome to TechAssassin! 🎉</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Your hackathon community platform
               </CardDescription>
             </CardHeader>

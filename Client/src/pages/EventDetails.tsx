@@ -181,7 +181,6 @@ export default function EventDetails() {
   }
 
   const isFull = event.participant_count >= event.max_participants;
-  const canRegister = event.registration_open && event.status !== 'past';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
