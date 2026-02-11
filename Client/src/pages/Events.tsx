@@ -21,13 +21,13 @@ export default function Events() {
 
   // Add Luma event data
   const lumaEvent: EventWithParticipants = {
-    id: 'luma-code4cause-2024',
+    id: 'luma-code4cause-2025',
     title: 'Code4Cause: Social Impact Hackathon',
     description: 'Ready to Ignite Change? Step up and code for a cause! The Social Impact Hackathon isn\'t just an event; it\'s a movement. In this adrenaline-fueled 7-hour sprint, we\'re bridging the gap between technology and humanity. Whether you\'re a coding wizard, a design visionary, or a strategic thinker, your skills have the power to solve real-world crises.',
-    start_date: '2024-02-21T09:00:00+05:30',
-    end_date: '2024-02-21T16:15:00+05:30',
+    start_date: '2025-02-21T09:00:00+05:30',
+    end_date: '2025-02-21T16:15:00+05:30',
     location: 'Computer Seminar Hall | GIDC Degree Engineering College, Abrama, Gujarat',
-    max_participants: 100,
+    max_participants: 200,
     participant_count: 45,
     status: 'live',
     image_urls: ['/luma.png'],
@@ -38,7 +38,7 @@ export default function Events() {
       '3rd': '1K INR'
     },
     themes: ['Social Impact'],
-    created_at: '2024-02-15T00:00:00+05:30'
+    created_at: '2025-02-15T00:00:00+05:30'
   };
 
   const fetchEvents = async () => {
