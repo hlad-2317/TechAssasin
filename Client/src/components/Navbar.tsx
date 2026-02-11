@@ -16,7 +16,7 @@ const Navbar = () => {
   const isAuthenticated = authService.isAuthenticated();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-hero/80 backdrop-blur-md border-b border-foreground/10">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-transparent backdrop-blur-md">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <Link to="/" className="text-hero-foreground font-heading font-bold text-xl tracking-tight">
           Tech<span className="text-primary">Assasin</span>
